@@ -1,0 +1,180 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\DB_EcommerceAgent.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:DB_EcommerceAgent.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\Sistemas expertos.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\Sistemas expertos.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\WV_GENERAL_PRODUCTS.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\WV_GENERAL_PRODUCTS.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\DB_ECOMMERCE.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\DB_ECOMMERCE.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\DATA_ECOMMERCE.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\DATA_ECOMMERCE.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\SCRIPTS\\QUERYS.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\SCRIPTS\\QUERYS.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\CONFIGURATIONS\\SYMMETRIC_KEY.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\CONFIGURATIONS\\SYMMETRIC_KEY.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_EncryptByKey.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_EncryptByKey.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_DecryptByKey.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_DecryptByKey.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\CONFIGURATIONS\\SCHEMAS.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ECOMMERCE\\CONFIGURATIONS\\SCHEMAS.sql||{B5A506EB-11BE-4782-9A18-21265C2CA0B4}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DB_EcommerceAgent.sql - Kiran (DESKTOP-IRCOFH0\\Hamlet (74)) - not connected",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\DB_EcommerceAgent.sql",
+              "RelativeDocumentMoniker": "DB_EcommerceAgent.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\DB_EcommerceAgent.sql - Kiran (DESKTOP-IRCOFH0\\Hamlet (74)) - not connected",
+              "RelativeToolTip": "DB_EcommerceAgent.sql - Kiran (DESKTOP-IRCOFH0\\Hamlet (74)) - not connected",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-22T19:40:57.125Z",
+              "EditorCaption": " - Kiran (DESKTOP-IRCOFH0\\Hamlet (74)) - not connected"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Sistemas expertos.sql - Kiran.master (DESKTOP-IRCOFH0\\Hamlet (59))",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\Sistemas expertos.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\Sistemas expertos.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\Sistemas expertos.sql - Kiran.master (DESKTOP-IRCOFH0\\Hamlet (59))",
+              "RelativeToolTip": "ECOMMERCE\\Sistemas expertos.sql - Kiran.master (DESKTOP-IRCOFH0\\Hamlet (59))",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-21T20:04:21.618Z",
+              "EditorCaption": " - Kiran.master (DESKTOP-IRCOFH0\\Hamlet (59))"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "WV_GENERAL_PRODUCTS.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\WV_GENERAL_PRODUCTS.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\WV_GENERAL_PRODUCTS.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\WV_GENERAL_PRODUCTS.sql",
+              "RelativeToolTip": "ECOMMERCE\\WV_GENERAL_PRODUCTS.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:43:38.5Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Fn_EncryptByKey.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_EncryptByKey.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_EncryptByKey.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_EncryptByKey.sql",
+              "RelativeToolTip": "ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_EncryptByKey.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:26:29.517Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "QUERYS.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\SCRIPTS\\QUERYS.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\SCRIPTS\\QUERYS.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\SCRIPTS\\QUERYS.sql",
+              "RelativeToolTip": "ECOMMERCE\\SCRIPTS\\QUERYS.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:18:44.043Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DATA_ECOMMERCE.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\DATA_ECOMMERCE.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\DATA_ECOMMERCE.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\DATA_ECOMMERCE.sql",
+              "RelativeToolTip": "ECOMMERCE\\DATA_ECOMMERCE.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:14:36.093Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DB_ECOMMERCE.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\DB_ECOMMERCE.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\DB_ECOMMERCE.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\DB_ECOMMERCE.sql",
+              "RelativeToolTip": "ECOMMERCE\\DB_ECOMMERCE.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:13:22.499Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SYMMETRIC_KEY.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\CONFIGURATIONS\\SYMMETRIC_KEY.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\CONFIGURATIONS\\SYMMETRIC_KEY.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\CONFIGURATIONS\\SYMMETRIC_KEY.sql",
+              "RelativeToolTip": "ECOMMERCE\\CONFIGURATIONS\\SYMMETRIC_KEY.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:26:33.002Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Fn_DecryptByKey.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_DecryptByKey.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_DecryptByKey.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_DecryptByKey.sql",
+              "RelativeToolTip": "ECOMMERCE\\FUNCTIONS\\SCALAR\\Fn_DecryptByKey.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:26:26.054Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "SCHEMAS.sql",
+              "DocumentMoniker": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\CONFIGURATIONS\\SCHEMAS.sql",
+              "RelativeDocumentMoniker": "ECOMMERCE\\CONFIGURATIONS\\SCHEMAS.sql",
+              "ToolTip": "C:\\Users\\Hamlet\\Downloads\\ECOMMERCE (1)\\ECOMMERCE\\CONFIGURATIONS\\SCHEMAS.sql",
+              "RelativeToolTip": "ECOMMERCE\\CONFIGURATIONS\\SCHEMAS.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-06-14T20:13:48.29Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
