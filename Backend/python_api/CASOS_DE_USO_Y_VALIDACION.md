@@ -6,6 +6,10 @@ Este archivo sirve para probar la API y luego comprobar en SQL Server que el his
 
 - `GET http://127.0.0.1:8000/`
 - `WebSocket ws://127.0.0.1:8000/ws/chat`
+- `GET http://127.0.0.1:8000/conversations/{conversationId}/messages`
+- `GET http://127.0.0.1:8000/users/{userId}/conversations`
+- `POST http://127.0.0.1:8000/conversations/{conversationId}/close`
+- `DELETE http://127.0.0.1:8000/conversations/{conversationId}`
 
 ## Caso 1. Saludo inicial
 
@@ -155,6 +159,65 @@ Salida esperada:
 Notas:
 - Este caso confirma el manejo del codigo `400`.
 - Como el mensaje viene vacio, no se crea historial y no se devuelve `conversationId`.
+
+## Caso 6. Ofertas o descuentos
+
+Entrada:
+
+```json
+{
+  "userId": "usuario-demo-5",
+  "message": "quiero ver ofertas"
+}
+```
+
+Salida esperada:
+
+```json
+{
+  "resultCode": 200,
+  "resultMessage": "OK",
+  "rule": "Busqueda por Ofertas Descuentos",
+  "reply": "<una plantilla activa de ofertas>",
+  "conversationId": "<numero generado por la BD>"
+}
+```
+
+Notas:
+- La regla se activa por palabras como `oferta`, `ofertas`, `descuento`, `descuentos` o `promocion`.
+- Si el mensaje tambien contiene palabras generales como `quiero`, la API prioriza la palabra clave mas especifica.
+
+## Caso 7. Consultar historial desde la API
+
+Despues de enviar mensajes por WebSocket, consulta:
+
+```http
+GET http://127.0.0.1:8000/conversations/2/messages
+```
+
+Salida esperada:
+
+```json
+{
+  "conversationId": 2,
+  "messages": [
+    {
+      "MensajeID": 1,
+      "ChatBot": false,
+      "Texto": "hola",
+      "FechaHora": "2026-07-07T00:00:00",
+      "ReglaActivadaID": null,
+      "MetaData": null
+    }
+  ]
+}
+```
+
+Tambien puedes listar conversaciones por usuario:
+
+```http
+GET http://127.0.0.1:8000/users/usuario-demo-2/conversations
+```
 
 ## Consultas SQL Para Comprobar Historial Por UserId
 

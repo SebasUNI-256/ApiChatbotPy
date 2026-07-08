@@ -59,8 +59,28 @@ class ResolveChatMessageUseCase:
                 products=products,
             )
 
-        if rule.action_python == "cargar_saludos_db":
+        if rule.action_python in {"cargar_saludos_db", "verificar_vip_saludo"}:
             reply = self._choose_reply(rule, "Hola, bienvenido a nuestra tienda.")
+            resolved_conversation_id = self._history_gateway.log_interaction(
+                user_id=user_id,
+                conversation_id=conversation_id,
+                user_message=clean_message,
+                bot_reply=reply,
+                activated_rule_id=rule.rule_id,
+            )
+            return ChatResponse(
+                result_code=200,
+                result_message="OK",
+                rule=rule.name,
+                reply=reply,
+                conversation_id=resolved_conversation_id,
+            )
+
+        if rule.action_python == "buscar_ofertas_db":
+            reply = self._choose_reply(
+                rule,
+                "Puedo ayudarte a revisar productos disponibles en el catalogo.",
+            )
             resolved_conversation_id = self._history_gateway.log_interaction(
                 user_id=user_id,
                 conversation_id=conversation_id,
@@ -97,11 +117,18 @@ class ResolveChatMessageUseCase:
 
     def _resolve_rule(self, message: str, rules: list[AgentRule]) -> AgentRule:
         normalized_message = normalize_text(message)
+        selected_rule: AgentRule | None = None
+        selected_keyword_length = -1
 
         for rule in rules:
             for keyword in rule.keywords:
-                if normalize_text(keyword) in normalized_message:
-                    return rule
+                normalized_keyword = normalize_text(keyword)
+                if normalized_keyword in normalized_message and len(normalized_keyword) > selected_keyword_length:
+                    selected_rule = rule
+                    selected_keyword_length = len(normalized_keyword)
+
+        if selected_rule is not None:
+            return selected_rule
 
         search_rule = self._find_rule_by_action(rules, "buscar_producto_en_db")
         if search_rule is not None:

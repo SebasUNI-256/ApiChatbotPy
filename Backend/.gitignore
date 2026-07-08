@@ -1,0 +1,9 @@
+.agents/
+.codex/
+.vs/
+**/.vs/
+**/__pycache__/
+*.py[cod]
+*.slnx.sqlite
+*.db
+*.log

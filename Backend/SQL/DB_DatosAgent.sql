@@ -1,95 +1,128 @@
-
-USE [DB_EcommerceAgent]
+﻿USE [DB_EcommerceAgent]
 GO
 
--- =====================================================================
--- VARIABLES PARA CAPTURAR LOS ID DE LAS REGLAS RECIÉN CREADAS
--- =====================================================================
+SET NOCOUNT ON;
+
 DECLARE @ReglaSaludoID INT;
 DECLARE @ReglaBusquedaID INT;
 DECLARE @ReglaNoEntendidoID INT;
+DECLARE @ReglaVipID INT;
+DECLARE @ReglaOfertasID INT;
 
--- =====================================================================
--- REQUERIMIENTOS A, B, C: CONFIGURAR REGLAS DE AGENTE
--- =====================================================================
+IF NOT EXISTS (SELECT 1 FROM dbo.ReglasChatbot WHERE NombreRegla = 'Saludo Inicial')
+BEGIN
+    INSERT INTO dbo.ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
+    VALUES ('Saludo Inicial', 1, 'cargar_saludos_db', 1);
+END;
 
--- A. CONFIGURAR REGLA DE AGENTE PARA SALUDOS INICIAL (Se agrega 1 principal y variaciones o subreglas de saludo si aplica, aquí insertamos la principal y complementarias)
-INSERT INTO ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
-VALUES ('Saludo Inicial Estándar', 1, 'cargar_saludos_db', 1);
-SET @ReglaSaludoID = SCOPE_IDENTITY(); -- Guardamos el ID para usarlo abajo
+IF NOT EXISTS (SELECT 1 FROM dbo.ReglasChatbot WHERE NombreRegla = 'Buscar Producto')
+BEGIN
+    INSERT INTO dbo.ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
+    VALUES ('Buscar Producto', 1, 'buscar_producto_en_db', 1);
+END;
 
--- B. CONFIGURAR REGLA DE AGENTE PARA BUSQUEDA DE PRODUCTOS
-INSERT INTO ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
-VALUES ('Búsqueda Catálogo General', 1, 'buscar_producto_en_db', 1);
-SET @ReglaBusquedaID = SCOPE_IDENTITY(); -- Guardamos el ID para usarlo abajo
+IF NOT EXISTS (SELECT 1 FROM dbo.ReglasChatbot WHERE NombreRegla = 'No Entendimos La Peticion')
+BEGIN
+    INSERT INTO dbo.ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
+    VALUES ('No Entendimos La Peticion', 0, 'manejar_no_entendido', 1);
+END;
 
--- C. CONFIGURAR REGLA DE AGENTE PARA INDICAR QUE NO ENTENDIÓ LA PETICIÓN (Fallback)
-INSERT INTO ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
-VALUES ('Petición No Entendida', 0, NULL, 1);
-SET @ReglaNoEntendidoID = SCOPE_IDENTITY(); -- Guardamos el ID para usarlo abajo
+IF NOT EXISTS (SELECT 1 FROM dbo.ReglasChatbot WHERE NombreRegla = 'Saludo Clientes VIP')
+BEGIN
+    INSERT INTO dbo.ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
+    VALUES ('Saludo Clientes VIP', 1, 'verificar_vip_saludo', 1);
+END;
 
--- Reglas adicionales para cumplir con el mínimo de 5 en la tabla ReglasChatbot
-INSERT INTO ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
-VALUES 
-('Saludo Clientes VIP', 1, 'verificar_vip_saludo', 1),
-('Búsqueda por Ofertas/Descuentos', 1, 'buscar_ofertas_db', 1);
+IF NOT EXISTS (SELECT 1 FROM dbo.ReglasChatbot WHERE NombreRegla = 'Busqueda por Ofertas Descuentos')
+BEGIN
+    INSERT INTO dbo.ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
+    VALUES ('Busqueda por Ofertas Descuentos', 1, 'buscar_ofertas_db', 1);
+END;
 
+SELECT @ReglaSaludoID = ReglaID FROM dbo.ReglasChatbot WHERE NombreRegla = 'Saludo Inicial';
+SELECT @ReglaBusquedaID = ReglaID FROM dbo.ReglasChatbot WHERE NombreRegla = 'Buscar Producto';
+SELECT @ReglaNoEntendidoID = ReglaID FROM dbo.ReglasChatbot WHERE NombreRegla = 'No Entendimos La Peticion';
+SELECT @ReglaVipID = ReglaID FROM dbo.ReglasChatbot WHERE NombreRegla = 'Saludo Clientes VIP';
+SELECT @ReglaOfertasID = ReglaID FROM dbo.ReglasChatbot WHERE NombreRegla = 'Busqueda por Ofertas Descuentos';
 
--- =====================================================================
--- REQUERIMIENTO D: CONFIGURAR PALABRAS CLAVES PARA SALUDO INICIAL (Mínimo 5)
--- =====================================================================
-INSERT INTO PalabrasClaveRegla (ReglaID, PalabraClave, Activo)
-VALUES 
-(@ReglaSaludoID, 'hola', 1),
-(@ReglaSaludoID, 'buenos dias', 1),
-(@ReglaSaludoID, 'buenas tardes', 1),
-(@ReglaSaludoID, 'que tal', 1),
-(@ReglaSaludoID, 'iniciar', 1);
+DECLARE @Keywords TABLE
+(
+    ReglaID INT NOT NULL,
+    PalabraClave VARCHAR(100) NOT NULL
+);
 
+INSERT INTO @Keywords (ReglaID, PalabraClave)
+VALUES
+(@ReglaSaludoID, 'hola'),
+(@ReglaSaludoID, 'buenos dias'),
+(@ReglaSaludoID, 'buenas tardes'),
+(@ReglaSaludoID, 'buenas noches'),
+(@ReglaSaludoID, 'que tal'),
+(@ReglaSaludoID, 'iniciar'),
+(@ReglaBusquedaID, 'buscar'),
+(@ReglaBusquedaID, 'busco'),
+(@ReglaBusquedaID, 'precio'),
+(@ReglaBusquedaID, 'tienen'),
+(@ReglaBusquedaID, 'comprar'),
+(@ReglaBusquedaID, 'catalogo'),
+(@ReglaBusquedaID, 'necesito'),
+(@ReglaBusquedaID, 'quiero'),
+(@ReglaBusquedaID, 'stock'),
+(@ReglaBusquedaID, 'producto'),
+(@ReglaOfertasID, 'oferta'),
+(@ReglaOfertasID, 'ofertas'),
+(@ReglaOfertasID, 'descuento'),
+(@ReglaOfertasID, 'descuentos'),
+(@ReglaOfertasID, 'promocion');
 
--- =====================================================================
--- REQUERIMIENTO E: CONFIGURAR PALABRAS CLAVES PARA BUSQUEDA DE PRODUCTOS (Mínimo 5)
--- =====================================================================
-INSERT INTO PalabrasClaveRegla (ReglaID, PalabraClave, Activo)
-VALUES 
-(@ReglaBusquedaID, 'buscar', 1),
-(@ReglaBusquedaID, 'precio', 1),
-(@ReglaBusquedaID, 'tienen', 1),
-(@ReglaBusquedaID, 'comprar', 1),
-(@ReglaBusquedaID, 'catalogo', 1);
+INSERT INTO dbo.PalabrasClaveRegla (ReglaID, PalabraClave, Activo)
+SELECT k.ReglaID, k.PalabraClave, 1
+FROM @Keywords k
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.PalabrasClaveRegla p
+    WHERE p.ReglaID = k.ReglaID
+      AND LOWER(p.PalabraClave) = LOWER(k.PalabraClave)
+);
 
+DECLARE @Plantillas TABLE
+(
+    ReglaID INT NOT NULL,
+    TextoRespuesta NVARCHAR(MAX) NOT NULL
+);
 
--- =====================================================================
--- REQUERIMIENTO F: CONFIGURAR RESPUESTAS DE AGENTE PARA SALUDO INICIAL (Mínimo 5)
--- =====================================================================
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(@ReglaSaludoID, '¡Hola! Bienvenido a nuestra tienda virtual. ¿En qué te puedo colaborar hoy?', 1),
-(@ReglaSaludoID, '¡Qué gusto tenerte aquí! ¿Buscas algún producto en nuestro catálogo o quieres revisar un pedido?', 1),
-(@ReglaSaludoID, 'Hola, soy tu asistente de compras. Dime qué artículo estás buscando hoy y lo encuentro por ti.', 1),
-(@ReglaSaludoID, '¡Bienvenido! Recuerda que hoy tenemos envío gratis en categorías seleccionadas. ¿Qué te gustaría buscar?', 1),
-(@ReglaSaludoID, '¡Hola, hola! Estoy listo para ayudarte a encontrar las mejores ofertas. ¿Qué necesitas comprar?', 1);
+INSERT INTO @Plantillas (ReglaID, TextoRespuesta)
+VALUES
+(@ReglaSaludoID, N'Hola, bienvenido a nuestra tienda. En que te puedo ayudar hoy?'),
+(@ReglaSaludoID, N'Que gusto tenerte de vuelta. Buscas algun producto de nuestro catalogo?'),
+(@ReglaSaludoID, N'Hola, soy tu asistente de compras virtuales. Deseas buscar un articulo o ver el estado de un pedido?'),
+(@ReglaSaludoID, N'Bienvenido. Puedo ayudarte a buscar productos, precios y disponibilidad.'),
+(@ReglaSaludoID, N'Hola. Estoy listo para ayudarte a encontrar lo que necesitas comprar.'),
+(@ReglaBusquedaID, N'He encontrado estas opciones para que puedas revisarlas.'),
+(@ReglaBusquedaID, N'Buenas noticias. Si tenemos disponible. Puedes revisar estas opciones.'),
+(@ReglaBusquedaID, N'Hola. Claro que si, con gusto te ayudo a encontrar lo que necesitas. Que tipo de producto estas buscando hoy?'),
+(@ReglaBusquedaID, N'Estoy revisando el catalogo. Estos son los resultados mas relevantes.'),
+(@ReglaBusquedaID, N'Encontrado. Te comparto la lista de precios y disponibilidad actual.'),
+(@ReglaNoEntendidoID, N'No entendi tu peticion. Puedes saludarme o escribirme el producto que deseas buscar.'),
+(@ReglaNoEntendidoID, N'No logre identificar lo que necesitas. Intenta con palabras como hola, buscar, precio o el nombre del producto.'),
+(@ReglaNoEntendidoID, N'Disculpa, no comprendi tu mensaje. Puedes escribirlo de otra forma?'),
+(@ReglaNoEntendidoID, N'No estoy seguro de haber entendido. Si buscas un producto, escribe su nombre o pide ver el catalogo.'),
+(@ReglaNoEntendidoID, N'Mi sistema no reconocio esa frase. Intenta usando precio, stock o el nombre del articulo.'),
+(@ReglaOfertasID, N'Puedo ayudarte a revisar productos disponibles. Por ahora las ofertas se consultan sobre el catalogo general.'),
+(@ReglaOfertasID, N'Buscare opciones relacionadas con ofertas o descuentos en el catalogo disponible.'),
+(@ReglaOfertasID, N'Estas son las opciones disponibles que podrian interesarte.'),
+(@ReglaOfertasID, N'Voy a revisar el catalogo para encontrar alternativas convenientes.'),
+(@ReglaOfertasID, N'Si buscas descuentos, dime tambien la categoria o producto que te interesa.');
 
-
--- =====================================================================
--- REQUERIMIENTO G: CONFIGURAR RESPUESTAS DE AGENTE PARA BUSQUEDA DE PRODUCTOS (Mínimo 5)
--- =====================================================================
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(@ReglaBusquedaID, '¡He encontrado estas opciones en nuestro sistema para ti! [@MESSAGE] [@TABLA]', 1),
-(@ReglaBusquedaID, 'Claro que sí, déjame revisar nuestro stock. Para darte un mejor resultado, ¿me podrías decir la marca o color? [@MESSAGE]', 1),
-(@ReglaBusquedaID, '¡Buenas noticias! Sí lo tenemos disponible. Aquí puedes ver los detalles, precios y fotos: [@TABLA]', 1),
-(@ReglaBusquedaID, 'Estoy buscando en el catálogo... Aquí tienes los resultados más relevantes para tu búsqueda: [@MESSAGE]', 1),
-(@ReglaBusquedaID, '¡Encontrado! Te comparto la lista de precios y la disponibilidad actual: [@TABLA]', 1);
-
-
--- =====================================================================
--- REQUERIMIENTO H: CONFIGURAR RESPUESTA DE AGENTE PARA INDICAR QUE NO ENTENDIMOS LA PETICION (Mínimo 5)
--- =====================================================================
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(@ReglaNoEntendidoID, 'Lo siento, no logré comprender tu solicitud. ¿Podrías intentar escribirlo de otra manera?', 1),
-(@ReglaNoEntendidoID, '¡Vaya! No encontré coincidencias con lo que escribiste. Recuerda que puedo ayudarte a buscar productos escribiendo "buscar [producto]".', 1),
-(@ReglaNoEntendidoID, 'Disculpa, soy un bot en entrenamiento y no entendí tu mensaje. ¿Me lo repites de forma más sencilla?', 1),
-(@ReglaNoEntendidoID, 'No estoy seguro de haber entendido bien. Si buscas un producto, escribe su nombre o pide ver el "catálogo".', 1),
-(@ReglaNoEntendidoID, 'Uuups, mi sistema no reconoció esa frase. Intenta usando palabras clave como: precio, stock o el nombre directo del artículo.', 1);
+INSERT INTO dbo.PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
+SELECT t.ReglaID, t.TextoRespuesta, 1
+FROM @Plantillas t
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.PlantillasRespuesta p
+    WHERE p.ReglaID = t.ReglaID
+      AND p.TextoRespuesta = t.TextoRespuesta
+);
+GO

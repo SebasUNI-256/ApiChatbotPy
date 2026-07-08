@@ -24,9 +24,7 @@ INNER JOIN [SQM_CATALOGS].[Tbl_Segments] (NOLOCK) S
 WHERE PDI.productIdentificatorStatusId = 1
 GO
 
-Select * from [SQM_GENERAL].[WV_GENERAL_PRODUCTS]
-
-CREATE OR ALTER VIEW [SQM_GENERAL].[WV_GENERAL_PRODUCTS]
+CREATE OR ALTER VIEW [SQM_GENERAL].[VW_GENERAL_PRODUCTS]
 AS
 SELECT
 	P.productId [ProductID],
@@ -72,4 +70,31 @@ INNER JOIN [SQM_GENERAL].[Tbl_Stocks] (NOLOCK) ST
 	ON VP.productVariableId = ST.stockProductVariableId
 	AND ST.stockStatusId = 1
 WHERE P.productStatusId = 1
+GO
+
+CREATE OR ALTER VIEW [SQM_GENERAL].[WV_GENERAL_PRODUCTS]
+AS
+SELECT
+	ProductID,
+	ProductName,
+	ProductVariableID,
+	ProductVariableName,
+	ProductVariablePrice,
+	CurrencyID,
+	CurrencyISO,
+	CategoryID,
+	CategoryName,
+	SubcategoryID,
+	SubcategoryName,
+	SegmentID,
+	SegmentName,
+	MarkID,
+	MarkName,
+	ProviderID,
+	ProviderName,
+	StockID,
+	StockAvailable,
+	StockFactoryDate,
+	StockExpirationDate
+FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS]
 GO

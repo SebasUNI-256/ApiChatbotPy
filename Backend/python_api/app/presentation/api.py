@@ -53,6 +53,42 @@ def healthcheck() -> dict[str, Any]:
     }
 
 
+@app.get("/conversations/{conversation_id}/messages")
+def get_conversation_messages(conversation_id: int) -> dict[str, Any]:
+    return {
+        "conversationId": conversation_id,
+        "messages": history_gateway.get_conversation_messages(conversation_id),
+    }
+
+
+@app.get("/users/{user_id}/conversations")
+def get_user_conversations(user_id: str) -> dict[str, Any]:
+    return {
+        "userId": user_id,
+        "conversations": history_gateway.get_user_conversations(user_id),
+    }
+
+
+@app.post("/conversations/{conversation_id}/close")
+def close_conversation(conversation_id: int) -> dict[str, Any]:
+    history_gateway.close_conversation(conversation_id)
+    return {
+        "resultCode": 200,
+        "resultMessage": "Conversacion cerrada correctamente.",
+        "conversationId": conversation_id,
+    }
+
+
+@app.delete("/conversations/{conversation_id}")
+def delete_conversation(conversation_id: int) -> dict[str, Any]:
+    history_gateway.delete_conversation(conversation_id)
+    return {
+        "resultCode": 200,
+        "resultMessage": "Conversacion eliminada correctamente.",
+        "conversationId": conversation_id,
+    }
+
+
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
