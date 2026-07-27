@@ -26,6 +26,7 @@ class ResolveChatMessageUseCase:
         user_id: str = "postman-user",
         conversation_id: int | None = None,
         parameters: dict[str, Any] | None = None,
+        page_number: Any = 1,
     ) -> ChatResponse:
         clean_message = message.strip()
         if not clean_message:
@@ -57,10 +58,33 @@ class ResolveChatMessageUseCase:
 
         if rule.action_python == "buscar_producto_en_db":
             search_text = self._extract_search_text(clean_message)
-            products, result_code, result_message, resolved_conversation_id = self._search_gateway.search_products(
+            try:
+                resolved_input_page = self._parse_positive_int(page_number, "pageNumber")
+            except ValueError as error:
+                return ChatResponse(
+                    result_code=400,
+                    result_message=str(error),
+                    rule=rule.name,
+                    reply=str(error),
+                    conversation_id=conversation_id,
+                    page_number=None,
+                    page_size=None,
+                    total_rows=None,
+                )
+
+            (
+                products,
+                result_code,
+                result_message,
+                resolved_conversation_id,
+                resolved_page_number,
+                page_size,
+                total_rows,
+            ) = self._search_gateway.search_products(
                 search_text,
                 user_id,
                 conversation_id,
+                resolved_input_page,
             )
             if not products and result_code == 200:
                 result_message = "No se encontraron productos disponibles para ese filtro."
@@ -76,6 +100,9 @@ class ResolveChatMessageUseCase:
                 reply=reply,
                 conversation_id=resolved_conversation_id,
                 products=products,
+                page_number=resolved_page_number,
+                page_size=page_size,
+                total_rows=total_rows,
             )
 
         if rule.action_python in {"cargar_saludos_db", "verificar_vip_saludo"}:
@@ -192,7 +219,9 @@ class ResolveChatMessageUseCase:
         )
 
     def _positive_int(self, parameters: dict[str, Any], name: str) -> int:
-        raw_value = parameters.get(name)
+        return self._parse_positive_int(parameters.get(name), name)
+
+    def _parse_positive_int(self, raw_value: Any, name: str) -> int:
         if isinstance(raw_value, bool) or not isinstance(raw_value, (int, str)):
             raise ValueError(f"El parametro {name} es obligatorio.")
         try:

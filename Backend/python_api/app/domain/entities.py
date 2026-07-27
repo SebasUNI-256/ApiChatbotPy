@@ -20,3 +20,6 @@ class ChatResponse:
     conversation_id: int | None = None
     products: list[dict[str, Any]] = field(default_factory=list)
     data: Any = None
+    page_number: int | None = None
+    page_size: int | None = None
+    total_rows: int | None = None

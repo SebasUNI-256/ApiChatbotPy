@@ -32,14 +32,16 @@ cambias de host.
 2. Restaurar la sesion al cargar la aplicacion con `GET /auth/session`.
 3. Abrir el WebSocket solamente cuando exista una sesion valida.
 4. Guardar en memoria el `conversationId` que devuelve el chat.
-5. Enviar `parameters` solamente para las acciones que los necesitan.
-6. Renderizar `products` para busquedas y `data` para carrito u orden.
-7. Cerrar la sesion con `POST /auth/logout`.
+5. Enviar `pageNumber` para recorrer busquedas; si se omite, la API usa la pagina `1`.
+6. Enviar `parameters` solamente para las acciones que los necesitan.
+7. Renderizar `products` y sus metadatos de paginacion para busquedas.
+8. Renderizar `data` para carrito u orden.
+9. Cerrar la sesion con `POST /auth/logout`.
 
 ## Disponible actualmente
 
 - Registro, login, restauracion y logout.
-- Busqueda de productos por chat.
+- Busqueda de productos por chat en paginas de 10 variantes.
 - Saludos, ofertas y respuesta de mensaje no entendido.
 - Agregar, consultar y eliminar productos del carrito.
 - Procesar pago cuando ya existen direccion y metodo de pago.
