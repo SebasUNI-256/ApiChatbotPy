@@ -9,7 +9,7 @@ export const useChatStore = create((set, get) => ({
   isConnected: false,
 
   connectWebSocket: () => {
-    const ws = new WebSocket('ws://localhost:8000/ws/chat');
+    const ws = new WebSocket('ws://127.0.0.1:8000/ws/chat');
 
     ws.onopen = () => set({ isConnected: true });
 
