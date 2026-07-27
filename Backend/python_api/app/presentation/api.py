@@ -25,6 +25,7 @@ from app.infrastructure.sql_chat_history import SqlServerChatHistoryGateway
 from app.infrastructure.sql_cart import SqlServerCartGateway
 from app.infrastructure.sql_product_search import SqlServerProductSearchGateway
 from app.infrastructure.sql_rule_repository import SqlServerRuleRepository
+from app.presentation.serializers import response_to_dict
 
 rule_repository = SqlServerRuleRepository()
 rule_cache = InMemoryRuleCache()
@@ -38,20 +39,6 @@ chat_use_case = ResolveChatMessageUseCase(
     history_gateway=history_gateway,
     rule_cache=rule_cache,
 )
-
-
-def response_to_dict(response: ChatResponse) -> dict[str, Any]:
-    payload = {
-        "resultCode": response.result_code,
-        "resultMessage": response.result_message,
-        "rule": response.rule,
-        "reply": response.reply,
-        "products": response.products,
-        "data": response.data,
-    }
-    if response.conversation_id is not None:
-        payload["conversationId"] = response.conversation_id
-    return payload
 
 
 @asynccontextmanager
@@ -249,12 +236,14 @@ async def websocket_chat(websocket: WebSocket):
             raw_conversation_id = payload.get("conversationId")
             conversation_id = None if raw_conversation_id in (None, "", 0, "0") else int(raw_conversation_id)
             parameters = payload.get("parameters")
+            page_number = payload.get("pageNumber", 1)
             try:
                 response = chat_use_case.execute(
                     message,
                     user_id=str(user_id),
                     conversation_id=conversation_id,
                     parameters=parameters if isinstance(parameters, dict) else {},
+                    page_number=page_number,
                 )
             except pyodbc.Error:
                 response = ChatResponse(

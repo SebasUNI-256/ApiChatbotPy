@@ -5,15 +5,26 @@ CREATE OR ALTER PROCEDURE dbo.sp_BuscarProductosAgente
     @i_FilterText VARCHAR(100),
     @i_UsuarioID VARCHAR(100),
     @i_ConversacionID BIGINT = NULL,
+    @i_pageNumber INT = 1,
     @o_ConversacionID BIGINT OUTPUT,
     @o_ResultCode INT OUTPUT,
-    @o_ResultMessage VARCHAR(500) OUTPUT
+    @o_ResultMessage VARCHAR(500) OUTPUT,
+    @o_pageNumber INT OUTPUT,
+    @o_pageSize INT OUTPUT,
+    @o_totalRows INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     DECLARE @ReglaBusquedaID INT;
     DECLARE @ReglaNoEntendidoID INT;
+    DECLARE @RowsPerPage INT = 10;
+    DECLARE @RowsReturned INT = 0;
+
+    SET @o_ConversacionID = @i_ConversacionID;
+    SET @o_pageNumber = @i_pageNumber;
+    SET @o_pageSize = @RowsPerPage;
+    SET @o_totalRows = 0;
 
     SELECT TOP 1 @ReglaBusquedaID = ReglaID
     FROM dbo.ReglasChatbot
@@ -26,7 +37,28 @@ BEGIN
       AND Activo = 1;
 
     BEGIN TRY
-        SET @o_ConversacionID = @i_ConversacionID;
+        IF @i_pageNumber IS NULL OR @i_pageNumber < 1
+        BEGIN
+            SET @o_ResultCode = 400;
+            SET @o_ResultMessage = 'El numero de pagina debe ser un entero positivo.';
+
+            SELECT TOP 0
+                ProductID,
+                ProductName,
+                ProductVariableID,
+                ProductVariableName,
+                ProductVariablePrice,
+                CurrencyISO,
+                CategoryName,
+                SubcategoryName,
+                SegmentName,
+                MarkName,
+                ProviderName,
+                StockAvailable
+            FROM [DB_ECOMMERCE].[SQM_GENERAL].[VW_GENERAL_PRODUCTS];
+
+            RETURN;
+        END;
 
         IF @o_ConversacionID IS NULL OR @o_ConversacionID = 0
         BEGIN
@@ -90,6 +122,16 @@ BEGIN
 
         DECLARE @Buscar VARCHAR(102) = '%' + LTRIM(RTRIM(@i_FilterText)) + '%';
 
+        SELECT @o_totalRows = COUNT(DISTINCT ProductVariableID)
+        FROM [DB_ECOMMERCE].[SQM_GENERAL].[VW_GENERAL_PRODUCTS] WITH (NOLOCK)
+        WHERE ProductName LIKE @Buscar
+            OR ProductVariableName LIKE @Buscar
+            OR CategoryName LIKE @Buscar
+            OR SubcategoryName LIKE @Buscar
+            OR SegmentName LIKE @Buscar
+            OR MarkName LIKE @Buscar
+            OR ProviderName LIKE @Buscar;
+
         SELECT
             ProductID,
             ProductName,
@@ -102,7 +144,7 @@ BEGIN
             SegmentName,
             MarkName,
             ProviderName,
-            StockAvailable
+            SUM(StockAvailable) AS StockAvailable
         FROM [DB_ECOMMERCE].[SQM_GENERAL].[VW_GENERAL_PRODUCTS] WITH (NOLOCK)
         WHERE ProductName LIKE @Buscar
             OR ProductVariableName LIKE @Buscar
@@ -110,10 +152,37 @@ BEGIN
             OR SubcategoryName LIKE @Buscar
             OR SegmentName LIKE @Buscar
             OR MarkName LIKE @Buscar
-            OR ProviderName LIKE @Buscar;
+            OR ProviderName LIKE @Buscar
+        GROUP BY
+            ProductID,
+            ProductName,
+            ProductVariableID,
+            ProductVariableName,
+            ProductVariablePrice,
+            CurrencyISO,
+            CategoryName,
+            SubcategoryName,
+            SegmentName,
+            MarkName,
+            ProviderName
+        ORDER BY
+            ProductID,
+            ProductVariableID
+        OFFSET (CONVERT(BIGINT, @i_pageNumber) - 1) * @RowsPerPage ROWS
+        FETCH NEXT @RowsPerPage ROWS ONLY;
 
-        SET @o_ResultCode = 200;
-        SET @o_ResultMessage = 'Busqueda realizada satisfactoriamente.';
+        SET @RowsReturned = @@ROWCOUNT;
+
+        IF @RowsReturned > 0
+        BEGIN
+            SET @o_ResultCode = 200;
+            SET @o_ResultMessage = 'Busqueda realizada satisfactoriamente.';
+        END
+        ELSE
+        BEGIN
+            SET @o_ResultCode = 204;
+            SET @o_ResultMessage = 'No se encontraron productos en la pagina solicitada.';
+        END;
 
         EXEC dbo.sp_GuardarMensaje
             @ConversacionID = @o_ConversacionID,

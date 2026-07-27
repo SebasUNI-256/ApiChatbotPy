@@ -106,6 +106,44 @@ El mensaje ya no necesita `userId`:
 }
 ```
 
+Las busquedas aceptan `pageNumber` en el nivel principal. Si se omite, vale `1`:
+
+```json
+{
+  "message": "quiero tenis",
+  "conversationId": null,
+  "pageNumber": 1
+}
+```
+
+Una respuesta de busqueda incluye `products` y los metadatos de paginacion:
+
+```json
+{
+  "resultCode": 200,
+  "resultMessage": "Busqueda realizada satisfactoriamente.",
+  "rule": "Buscar Producto",
+  "reply": "Resultados encontrados.",
+  "products": [
+    {
+      "ProductID": 1,
+      "ProductVariableID": 1,
+      "ProductVariableName": "TALLA 40"
+    }
+  ],
+  "data": null,
+  "conversationId": 12,
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalRows": 22
+}
+```
+
+`ProductVariableID` identifica la variante que se envia luego como
+`parameters.productVariableId`. `pageSize` siempre vale `10`; el total de paginas
+se calcula con `Math.ceil(totalRows / pageSize)`. Las respuestas que no son
+busquedas omiten los tres campos de paginacion.
+
 Las acciones de carrito usan `parameters` solo cuando necesitan identificadores:
 
 ```json

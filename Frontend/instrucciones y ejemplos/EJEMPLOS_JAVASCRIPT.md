@@ -81,6 +81,11 @@ socket.addEventListener("message", (event) => {
   console.log("Bot:", response.reply);
   console.log("Productos:", response.products);
   console.log("Carrito u orden:", response.data);
+
+  if (response.pageNumber != null) {
+    const totalPages = Math.ceil(response.totalRows / response.pageSize);
+    console.log(`Pagina ${response.pageNumber} de ${totalPages}`);
+  }
 });
 
 socket.addEventListener("close", (event) => {
@@ -91,7 +96,7 @@ socket.addEventListener("close", (event) => {
   }
 });
 
-function sendChat(message, parameters) {
+function sendChat(message, parameters, pageNumber) {
   if (socket.readyState !== WebSocket.OPEN) {
     throw new Error("El chat todavia no esta conectado.");
   }
@@ -99,6 +104,7 @@ function sendChat(message, parameters) {
   socket.send(JSON.stringify({
     message,
     conversationId,
+    ...(pageNumber != null ? { pageNumber } : {}),
     ...(parameters ? { parameters } : {}),
   }));
 }
@@ -107,11 +113,27 @@ function sendChat(message, parameters) {
 ## Buscar productos
 
 ```javascript
-sendChat("quiero tenis");
+sendChat("quiero tenis", undefined, 1);
 ```
 
 Lee los resultados desde `response.products`. Para añadir un producto usa su
 `ProductVariableID`, no `ProductID`.
+
+Para solicitar otra pagina, conserva el mismo mensaje y `conversationId`:
+
+```javascript
+sendChat("quiero tenis", undefined, 2);
+```
+
+Los metadatos solo aparecen en respuestas de busqueda:
+
+```javascript
+const totalPages = Math.ceil(response.totalRows / response.pageSize);
+const currentPageRows = response.products.length;
+```
+
+`pageSize` siempre vale `10`; `currentPageRows` puede ser menor en la ultima
+pagina. No envies cero, negativos, texto ni booleanos como `pageNumber`.
 
 ## Agregar al carrito
 

@@ -9,6 +9,7 @@
 - El navegador adjunta la cookie al WebSocket si HTTP y WebSocket usan el mismo host.
 - El frontend nunca envia `userId` en el chat.
 - `conversationId` es opcional en el primer mensaje y debe reutilizarse despues.
+- `pageNumber` es opcional y solo se usa en busquedas; si se omite, vale `1`.
 
 ## Endpoints HTTP
 
@@ -80,6 +81,7 @@ Mensaje general:
 {
   "message": "texto que activa la regla",
   "conversationId": null,
+  "pageNumber": 1,
   "parameters": {}
 }
 ```
@@ -103,11 +105,35 @@ Respuesta general:
 - `data` contiene el carrito o una orden.
 - Confirma el resultado con `resultCode`; no deduzcas exito solamente desde `reply`.
 
+Las respuestas de busqueda tambien incluyen los metadatos de paginacion:
+
+```json
+{
+  "resultCode": 200,
+  "resultMessage": "Busqueda realizada satisfactoriamente.",
+  "rule": "Buscar Producto",
+  "reply": "Resultados encontrados.",
+  "products": [],
+  "data": null,
+  "conversationId": 12,
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalRows": 22
+}
+```
+
+- `pageNumber` es la pagina solicitada.
+- `pageSize` es la capacidad fija de cada pagina: `10`.
+- `totalRows` es la cantidad total de variantes que coinciden con el filtro.
+- La cantidad recibida en la pagina actual es `products.length`.
+- El total de paginas se calcula con `Math.ceil(totalRows / pageSize)`.
+- Las respuestas que no son busquedas omiten estos tres campos.
+
 ## Acciones disponibles
 
 | Accion | Ejemplo de `message` | `parameters` | Resultado |
 | --- | --- | --- | --- |
-| Buscar productos | `quiero tenis` | No | `products` |
+| Buscar productos | `quiero tenis` | No; usa `pageNumber` en el nivel principal | `products` y metadatos de paginacion |
 | Ver ofertas | `quiero ver ofertas` | No | Mensaje en `reply` |
 | Agregar al carrito | `agregar al carrito` | `productVariableId`, `quantity` | Carrito actualizado en `data` |
 | Consultar carrito | `ver carrito` | No | Carrito en `data` |
@@ -141,6 +167,31 @@ La busqueda devuelve registros como:
 
 Para agregar un resultado al carrito, envia `ProductVariableID` como
 `parameters.productVariableId`.
+
+## Paginar productos
+
+Primera pagina:
+
+```json
+{
+  "message": "quiero tenis",
+  "conversationId": null,
+  "pageNumber": 1
+}
+```
+
+Siguiente pagina, reutilizando la misma conversacion y el mismo mensaje:
+
+```json
+{
+  "message": "quiero tenis",
+  "conversationId": 12,
+  "pageNumber": 2
+}
+```
+
+`pageNumber` debe ser un entero positivo. Un texto, un booleano, cero o un valor
+negativo produce `resultCode: 400` sin consultar productos en la base de datos.
 
 ## Forma del carrito
 
@@ -212,6 +263,7 @@ Procesar pago y consultar orden devuelven:
 | Codigo | Significado para el frontend |
 | --- | --- |
 | `400` | Faltan parametros o tienen formato invalido |
+| `204` | La pagina solicitada no contiene productos |
 | `401` HTTP | No hay sesion valida |
 | `403` HTTP | Se intento consultar otro usuario |
 | `404` | Recurso inexistente o no perteneciente al usuario |
@@ -228,7 +280,7 @@ Los errores normales de carrito llegan como mensajes WebSocket con
 - No hay endpoints para listar o registrar direcciones y metodos de pago.
 - El frontend no puede completar un pago por si solo hasta disponer de esos IDs.
 - No hay endpoints REST separados para carrito: estas acciones pasan por el chat.
-- Busqueda de productos no tiene paginacion.
+- Las busquedas usan paginas fijas de 10 variantes.
 - Impuestos y envio permanecen en cero porque no existen reglas de calculo.
 - Las reglas del chatbot se cargan al iniciar la API; cambios SQL requieren reinicio.
 - La API no implementa reconexion automatica del WebSocket; corresponde al cliente.

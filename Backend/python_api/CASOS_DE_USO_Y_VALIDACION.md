@@ -51,7 +51,8 @@ Entrada:
 
 ```json
 {
-  "message": "quiero tenis"
+  "message": "quiero tecnologia",
+  "pageNumber": 1
 }
 ```
 
@@ -67,25 +68,32 @@ Salida esperada:
   "products": [
     {
       "ProductID": "<id>",
-      "ProductName": "<nombre del producto>"
+      "ProductName": "<nombre del producto>",
+      "ProductVariableID": "<id de la variante>"
     }
-  ]
+  ],
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalRows": 11
 }
 ```
 
 Notas:
 - `reply` puede variar.
-- `products` puede traer uno o varios registros.
+- `products` trae como maximo 10 variantes por pagina.
+- `pageSize` permanece en `10`, aunque la ultima pagina tenga menos productos.
+- `totalRows` depende de los datos instalados; `11` corresponde a la base local usada en este ejemplo.
 - Lo importante es que `rule` sea `Buscar Producto` y que venga `conversationId`.
 
-## Caso 3. Busqueda continuando una conversacion existente
+## Caso 3. Segunda pagina continuando una conversacion existente
 
 Entrada:
 
 ```json
 {
   "conversationId": 2,
-  "message": "ahora quiero camisas"
+  "message": "quiero tecnologia",
+  "pageNumber": 2
 }
 ```
 
@@ -101,17 +109,81 @@ Salida esperada:
   "products": [
     {
       "ProductID": "<id>",
-      "ProductName": "<nombre del producto>"
+      "ProductName": "<nombre del producto>",
+      "ProductVariableID": "<id de la variante>"
     }
-  ]
+  ],
+  "pageNumber": 2,
+  "pageSize": 10,
+  "totalRows": 11
 }
 ```
 
 Notas:
 - El `conversationId` debe mantenerse igual.
+- El mensaje de busqueda tambien se mantiene; solo cambia `pageNumber`.
+- Con 11 coincidencias, la segunda pagina contiene una variante.
 - Eso permite que el historial quede unido a la misma conversacion.
 
-## Caso 4. Mensaje no entendido
+## Caso 4. Pagina sin resultados
+
+Entrada:
+
+```json
+{
+  "conversationId": 2,
+  "message": "quiero tecnologia",
+  "pageNumber": 99
+}
+```
+
+Salida esperada:
+
+```json
+{
+  "resultCode": 204,
+  "resultMessage": "No se encontraron productos en la pagina solicitada.",
+  "rule": "Buscar Producto",
+  "reply": "No se encontraron productos en la pagina solicitada.",
+  "products": [],
+  "data": null,
+  "conversationId": 2,
+  "pageNumber": 99,
+  "pageSize": 10,
+  "totalRows": 11
+}
+```
+
+`204` indica que el filtro existe, pero la pagina solicitada no contiene filas.
+
+## Caso 5. Numero de pagina invalido
+
+Entrada:
+
+```json
+{
+  "message": "quiero tecnologia",
+  "pageNumber": 0
+}
+```
+
+Salida esperada:
+
+```json
+{
+  "resultCode": 400,
+  "resultMessage": "El parametro pageNumber debe ser un entero positivo.",
+  "rule": "Buscar Producto",
+  "reply": "El parametro pageNumber debe ser un entero positivo.",
+  "products": [],
+  "data": null
+}
+```
+
+Tambien se rechazan negativos, texto y booleanos. La API no consulta productos
+ni devuelve metadatos de paginacion cuando el valor es invalido.
+
+## Caso 6. Mensaje no entendido
 
 Entrada:
 
@@ -137,7 +209,7 @@ Notas:
 - `reply` puede variar.
 - Lo importante es que `rule` sea `No Entendimos La Peticion`.
 
-## Caso 5. Busqueda con texto vacio
+## Caso 7. Busqueda con texto vacio
 
 Entrada:
 
@@ -162,7 +234,7 @@ Notas:
 - Este caso confirma el manejo del codigo `400`.
 - Como el mensaje viene vacio, no se crea historial y no se devuelve `conversationId`.
 
-## Caso 6. Ofertas o descuentos
+## Caso 8. Ofertas o descuentos
 
 Entrada:
 
@@ -188,7 +260,7 @@ Notas:
 - La regla se activa por palabras como `oferta`, `ofertas`, `descuento`, `descuentos` o `promocion`.
 - Si el mensaje tambien contiene palabras generales como `quiero`, la API prioriza la palabra clave mas especifica.
 
-## Caso 7. Consultar historial desde la API
+## Caso 9. Consultar historial desde la API
 
 Despues de enviar mensajes por WebSocket, consulta:
 
