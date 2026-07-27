@@ -23,6 +23,10 @@ Antes de iniciar la API se debe ejecutar `SQL/Auth_Usuarios.sql` en
 estado `ACTIVO`. El instalador crea el rol `CLIENTE` si hace falta y requiere que
 exista el usuario interno con ID `1`.
 
+Para habilitar el carrito se ejecutan `SQL/SP_Carrito.sql` y luego
+`SQL/DB_DatosAgent.sql`. Ambos scripts se pueden volver a ejecutar sin duplicar
+reglas ni reemplazar datos del carrito.
+
 ## Registro
 
 `POST /auth/register`
@@ -96,6 +100,29 @@ El mensaje ya no necesita `userId`:
   "conversationId": null
 }
 ```
+
+Las acciones de carrito usan `parameters` solo cuando necesitan identificadores:
+
+```json
+{
+  "message": "agregar al carrito",
+  "conversationId": null,
+  "parameters": {
+    "productVariableId": 1,
+    "quantity": 2
+  }
+}
+```
+
+Los parametros disponibles son:
+
+- agregar: `productVariableId`, `quantity`;
+- eliminar: `cartDetailId`;
+- pagar: `addressId`, `paymentMethodId`;
+- consultar orden: `orderId`.
+
+Consultar el carrito no requiere parametros. La respuesta coloca el carrito o
+la orden en `data`; `userId` siempre se obtiene de la sesion.
 
 Una conexion sin sesion se cierra con codigo `4401`; intentar reutilizar una
 conversacion ajena se cierra con `4403`.

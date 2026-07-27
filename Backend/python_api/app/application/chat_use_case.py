@@ -1,7 +1,8 @@
 import random
+from typing import Any
 
 from app.domain.entities import AgentRule, ChatResponse
-from app.domain.ports import ChatHistoryGateway, ProductSearchGateway, RuleCache
+from app.domain.ports import CartGateway, ChatHistoryGateway, ProductSearchGateway, RuleCache
 
 from .text_utils import normalize_text
 
@@ -10,10 +11,12 @@ class ResolveChatMessageUseCase:
     def __init__(
         self,
         search_gateway: ProductSearchGateway,
+        cart_gateway: CartGateway,
         history_gateway: ChatHistoryGateway,
         rule_cache: RuleCache,
     ) -> None:
         self._search_gateway = search_gateway
+        self._cart_gateway = cart_gateway
         self._history_gateway = history_gateway
         self._rule_cache = rule_cache
 
@@ -22,6 +25,7 @@ class ResolveChatMessageUseCase:
         message: str,
         user_id: str = "postman-user",
         conversation_id: int | None = None,
+        parameters: dict[str, Any] | None = None,
     ) -> ChatResponse:
         clean_message = message.strip()
         if not clean_message:
@@ -35,6 +39,21 @@ class ResolveChatMessageUseCase:
 
         rules = self._rule_cache.get_rules()
         rule = self._resolve_rule(clean_message, rules)
+
+        if rule.action_python in {
+            "agregar_carrito_db",
+            "consultar_carrito_db",
+            "eliminar_producto_carrito_db",
+            "procesar_pago_carrito_db",
+            "consultar_orden_pago_db",
+        }:
+            return self._execute_cart_action(
+                rule,
+                clean_message,
+                int(user_id),
+                conversation_id,
+                parameters or {},
+            )
 
         if rule.action_python == "buscar_producto_en_db":
             search_text = self._extract_search_text(clean_message)
@@ -114,6 +133,75 @@ class ResolveChatMessageUseCase:
             reply=reply,
             conversation_id=resolved_conversation_id,
         )
+
+    def _execute_cart_action(
+        self,
+        rule: AgentRule,
+        message: str,
+        user_id: int,
+        conversation_id: int | None,
+        parameters: dict[str, Any],
+    ) -> ChatResponse:
+        try:
+            if rule.action_python == "agregar_carrito_db":
+                result_code, result_message, data = self._cart_gateway.add_product(
+                    user_id,
+                    self._positive_int(parameters, "productVariableId"),
+                    self._positive_int(parameters, "quantity"),
+                )
+            elif rule.action_python == "consultar_carrito_db":
+                result_code, result_message, data = self._cart_gateway.get_cart(user_id)
+            elif rule.action_python == "eliminar_producto_carrito_db":
+                result_code, result_message, data = self._cart_gateway.remove_product(
+                    user_id,
+                    self._positive_int(parameters, "cartDetailId"),
+                )
+            elif rule.action_python == "procesar_pago_carrito_db":
+                result_code, result_message, data = self._cart_gateway.checkout(
+                    user_id,
+                    self._positive_int(parameters, "addressId"),
+                    self._positive_int(parameters, "paymentMethodId"),
+                )
+            else:
+                result_code, result_message, data = self._cart_gateway.get_order(
+                    user_id,
+                    self._positive_int(parameters, "orderId"),
+                )
+        except ValueError as error:
+            result_code, result_message, data = 400, str(error), None
+
+        reply = (
+            self._choose_reply(rule, result_message)
+            if result_code < 400
+            else result_message
+        )
+        resolved_conversation_id = self._history_gateway.log_interaction(
+            user_id=str(user_id),
+            conversation_id=conversation_id,
+            user_message=message,
+            bot_reply=reply,
+            activated_rule_id=rule.rule_id,
+        )
+        return ChatResponse(
+            result_code=result_code,
+            result_message=result_message,
+            rule=rule.name,
+            reply=reply,
+            conversation_id=resolved_conversation_id,
+            data=data,
+        )
+
+    def _positive_int(self, parameters: dict[str, Any], name: str) -> int:
+        raw_value = parameters.get(name)
+        if isinstance(raw_value, bool) or not isinstance(raw_value, (int, str)):
+            raise ValueError(f"El parametro {name} es obligatorio.")
+        try:
+            value = int(raw_value)
+        except ValueError as error:
+            raise ValueError(f"El parametro {name} debe ser un entero positivo.") from error
+        if value <= 0:
+            raise ValueError(f"El parametro {name} debe ser un entero positivo.")
+        return value
 
     def _resolve_rule(self, message: str, rules: list[AgentRule]) -> AgentRule:
         normalized_message = normalize_text(message)

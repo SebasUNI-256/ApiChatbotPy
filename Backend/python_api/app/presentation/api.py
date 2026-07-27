@@ -22,16 +22,19 @@ from app.infrastructure.sql_auth import (
     SqlServerAuthGateway,
 )
 from app.infrastructure.sql_chat_history import SqlServerChatHistoryGateway
+from app.infrastructure.sql_cart import SqlServerCartGateway
 from app.infrastructure.sql_product_search import SqlServerProductSearchGateway
 from app.infrastructure.sql_rule_repository import SqlServerRuleRepository
 
 rule_repository = SqlServerRuleRepository()
 rule_cache = InMemoryRuleCache()
 search_gateway = SqlServerProductSearchGateway()
+cart_gateway = SqlServerCartGateway()
 history_gateway = SqlServerChatHistoryGateway()
 auth_gateway = SqlServerAuthGateway()
 chat_use_case = ResolveChatMessageUseCase(
     search_gateway=search_gateway,
+    cart_gateway=cart_gateway,
     history_gateway=history_gateway,
     rule_cache=rule_cache,
 )
@@ -44,6 +47,7 @@ def response_to_dict(response: ChatResponse) -> dict[str, Any]:
         "rule": response.rule,
         "reply": response.reply,
         "products": response.products,
+        "data": response.data,
     }
     if response.conversation_id is not None:
         payload["conversationId"] = response.conversation_id
@@ -244,7 +248,22 @@ async def websocket_chat(websocket: WebSocket):
             message = str(payload.get("message", ""))
             raw_conversation_id = payload.get("conversationId")
             conversation_id = None if raw_conversation_id in (None, "", 0, "0") else int(raw_conversation_id)
-            response = chat_use_case.execute(message, user_id=str(user_id), conversation_id=conversation_id)
+            parameters = payload.get("parameters")
+            try:
+                response = chat_use_case.execute(
+                    message,
+                    user_id=str(user_id),
+                    conversation_id=conversation_id,
+                    parameters=parameters if isinstance(parameters, dict) else {},
+                )
+            except pyodbc.Error:
+                response = ChatResponse(
+                    result_code=500,
+                    result_message="No fue posible completar la operacion en la base de datos.",
+                    rule=None,
+                    reply="No fue posible completar la operacion en la base de datos.",
+                    conversation_id=conversation_id,
+                )
             await websocket.send_json(response_to_dict(response))
     except PermissionError:
         await websocket.close(code=4403, reason="Conversacion no autorizada.")

@@ -19,3 +19,4 @@ class ChatResponse:
     reply: str
     conversation_id: int | None = None
     products: list[dict[str, Any]] = field(default_factory=list)
+    data: Any = None
