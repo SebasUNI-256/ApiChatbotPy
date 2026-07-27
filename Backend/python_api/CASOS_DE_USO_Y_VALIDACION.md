@@ -1,9 +1,13 @@
 # Casos De Uso Y Validacion
 
-Este archivo sirve para probar la API y luego comprobar en SQL Server que el historial queda guardado correctamente cuando se mantiene el mismo `userId`.
+Este archivo sirve para probar la API y comprobar en SQL Server que el historial queda asociado al usuario autenticado. Primero inicia sesion; el WebSocket obtiene `userId` desde la cookie y no acepta identidad enviada por el cliente.
 
 ## Endpoint
 
+- `POST http://127.0.0.1:8000/auth/register`
+- `POST http://127.0.0.1:8000/auth/login`
+- `GET http://127.0.0.1:8000/auth/session`
+- `POST http://127.0.0.1:8000/auth/logout`
 - `GET http://127.0.0.1:8000/`
 - `WebSocket ws://127.0.0.1:8000/ws/chat`
 - `GET http://127.0.0.1:8000/conversations/{conversationId}/messages`
@@ -11,13 +15,15 @@ Este archivo sirve para probar la API y luego comprobar en SQL Server que el his
 - `POST http://127.0.0.1:8000/conversations/{conversationId}/close`
 - `DELETE http://127.0.0.1:8000/conversations/{conversationId}`
 
+En Postman, conserva la cookie recibida al registrar o iniciar sesion. En el
+navegador, las solicitudes HTTP deben usar `credentials: "include"`.
+
 ## Caso 1. Saludo inicial
 
 Entrada:
 
 ```json
 {
-  "userId": "usuario-demo-1",
   "message": "hola"
 }
 ```
@@ -45,7 +51,6 @@ Entrada:
 
 ```json
 {
-  "userId": "usuario-demo-2",
   "message": "quiero tenis"
 }
 ```
@@ -79,7 +84,6 @@ Entrada:
 
 ```json
 {
-  "userId": "usuario-demo-2",
   "conversationId": 2,
   "message": "ahora quiero camisas"
 }
@@ -113,7 +117,6 @@ Entrada:
 
 ```json
 {
-  "userId": "usuario-demo-3",
   "message": "asdasdasd"
 }
 ```
@@ -140,7 +143,6 @@ Entrada:
 
 ```json
 {
-  "userId": "usuario-demo-4",
   "message": ""
 }
 ```
@@ -166,7 +168,6 @@ Entrada:
 
 ```json
 {
-  "userId": "usuario-demo-5",
   "message": "quiero ver ofertas"
 }
 ```
@@ -216,12 +217,12 @@ Salida esperada:
 Tambien puedes listar conversaciones por usuario:
 
 ```http
-GET http://127.0.0.1:8000/users/usuario-demo-2/conversations
+GET http://127.0.0.1:8000/users/8/conversations
 ```
 
 ## Consultas SQL Para Comprobar Historial Por UserId
 
-Usa siempre el mismo `userId` en Postman o en tu cliente WebSocket. Luego abre `SQL Server Management Studio`, entra a una nueva consulta y ejecuta lo siguiente.
+Usa el ID numerico devuelto por `/auth/login` o `/auth/session`. Luego abre `SQL Server Management Studio`, entra a una nueva consulta y ejecuta lo siguiente.
 
 ## 1. Ver conversaciones de un usuario
 
@@ -236,7 +237,7 @@ SELECT
     FechaFin,
     Activo
 FROM dbo.HistorialConversaciones
-WHERE UsuarioID = 'usuario-demo-2'
+WHERE UsuarioID = '8'
 ORDER BY ConversacionID DESC;
 ```
 
@@ -260,7 +261,7 @@ SELECT
 FROM dbo.HistorialConversaciones c
 INNER JOIN dbo.HistorialMensajes m
     ON m.ConversacionID = c.ConversacionID
-WHERE c.UsuarioID = 'usuario-demo-2'
+WHERE c.UsuarioID = '8'
 ORDER BY c.ConversacionID DESC, m.MensajeID ASC;
 ```
 
@@ -325,15 +326,15 @@ ORDER BY MensajeID DESC;
 
 ## Como Validar Que Si Mantiene El Historial
 
-1. Envia un saludo con un `userId`, por ejemplo `usuario-demo-2`.
+1. Inicia sesion y envia un saludo sin incluir `userId`.
 2. Guarda el `conversationId` que regresa la API.
-3. Envia otra busqueda usando el mismo `userId` y el mismo `conversationId`.
+3. Envia otra busqueda usando la misma sesion y el mismo `conversationId`.
 4. Ejecuta la consulta de mensajes por usuario.
 5. Debes ver varios mensajes bajo la misma conversacion.
 
 ## Que Debe Verse Bien
 
-- El mismo `userId` debe aparecer en `HistorialConversaciones`.
+- El ID del usuario autenticado debe aparecer en `HistorialConversaciones`.
 - Si reutilizas el mismo `conversationId`, los mensajes deben quedar en esa misma conversacion.
 - Los mensajes del usuario se guardan con `ChatBot = 0`.
 - Las respuestas del bot se guardan con `ChatBot = 1`.

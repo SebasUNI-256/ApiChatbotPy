@@ -1,5 +1,9 @@
 # Contrato de autenticacion para el frontend
 
+Esta es la referencia tecnica de autenticacion de la API. La guia de consumo
+orientada al frontend esta en
+[`Frontend/instrucciones y ejemplos`](../../Frontend/instrucciones%20y%20ejemplos/README.md).
+
 La API mantiene la sesion durante 8 horas mediante la cookie firmada `chat_session`.
 El frontend no debe guardar contrasenas, cookies ni identificadores de sesion en
 `localStorage`.
@@ -86,10 +90,11 @@ El usuario publico tiene esta forma:
 
 ## Chat e historial
 
-El WebSocket se abre normalmente y el navegador adjunta la cookie:
+El WebSocket se abre con el mismo host usado para las llamadas HTTP y el
+navegador adjunta la cookie. Con el frontend local en `localhost:5173`, usa:
 
 ```javascript
-const socket = new WebSocket("ws://127.0.0.1:8000/ws/chat");
+const socket = new WebSocket("ws://localhost:8000/ws/chat");
 ```
 
 El mensaje ya no necesita `userId`:
@@ -123,6 +128,11 @@ Los parametros disponibles son:
 
 Consultar el carrito no requiere parametros. La respuesta coloca el carrito o
 la orden en `data`; `userId` siempre se obtiene de la sesion.
+
+La API todavia no ofrece endpoints para listar o registrar direcciones y metodos
+de pago. El frontend no debe inventar `addressId` ni `paymentMethodId`; hasta que
+esos endpoints existan, esos identificadores deben estar previamente registrados
+en la base de datos.
 
 Una conexion sin sesion se cierra con codigo `4401`; intentar reutilizar una
 conversacion ajena se cierra con `4403`.

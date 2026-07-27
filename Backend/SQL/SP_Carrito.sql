@@ -338,7 +338,6 @@ BEGIN
             ) D
             WHERE NOT EXISTS
             (
-                -- ponytail: el inventario actual usa una fila de stock por variante.
                 SELECT 1
                 FROM SQM_GENERAL.Tbl_Stocks S WITH (UPDLOCK, HOLDLOCK)
                 WHERE S.stockProductVariableId = D.cartDetailProductVariableId
@@ -360,7 +359,6 @@ BEGIN
         WHERE cartDetailCartId = @CartId
           AND cartDetailStatusId = 1;
 
-        -- ponytail: impuestos y envio siguen en cero hasta que existan reglas de calculo.
         INSERT INTO SQM_GENERAL.Tbl_PaymentOrders
         (
             orderUserId,
