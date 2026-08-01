@@ -32,7 +32,10 @@ BEGIN
 
     DECLARE @CartId INT;
     DECLARE @CartDetailId INT;
-    DECLARE @Precio DECIMAL(18,2);
+    DECLARE @PrecioOriginal DECIMAL(18,2);
+    DECLARE @PrecioFinal DECIMAL(18,2);
+    DECLARE @DescuentoPorcentaje DECIMAL(5,2) = 0;
+    DECLARE @DescuentoUnitario DECIMAL(18,2) = 0;
     DECLARE @MonedaId INT;
     DECLARE @CantidadActual INT = 0;
     DECLARE @StockDisponible INT;
@@ -41,7 +44,7 @@ BEGIN
         BEGIN TRANSACTION;
 
         SELECT
-            @Precio = productVariablePrice,
+            @PrecioOriginal = productVariablePrice,
             @MonedaId = productVariableCurrencyId
         FROM SQM_GENERAL.Tbl_ProductVariables WITH (UPDLOCK, HOLDLOCK)
         WHERE productVariableId = @ProductoVariableId
@@ -53,6 +56,23 @@ BEGIN
             SELECT 404 AS ResultCode, N'Producto no encontrado o inactivo.' AS ResultMessage;
             RETURN;
         END;
+
+        SELECT TOP (1)
+            @DescuentoPorcentaje = Offer.offerDiscountPercentage
+        FROM SQM_GENERAL.Tbl_ProductOffers ProductOffer WITH (UPDLOCK, HOLDLOCK)
+        INNER JOIN SQM_GENERAL.Tbl_Offers Offer WITH (UPDLOCK, HOLDLOCK)
+            ON Offer.offerId = ProductOffer.productOfferOfferId
+        WHERE ProductOffer.productOfferProductVariableId = @ProductoVariableId
+          AND ProductOffer.productOfferStatusId = 1
+          AND Offer.offerStatusId = 1
+          AND Offer.offerStartDate <= SYSDATETIME()
+          AND (Offer.offerEndDate IS NULL OR Offer.offerEndDate >= SYSDATETIME())
+        ORDER BY
+            Offer.offerDiscountPercentage DESC,
+            Offer.offerId;
+
+        SET @DescuentoUnitario = ROUND(@PrecioOriginal * @DescuentoPorcentaje / 100.0, 2);
+        SET @PrecioFinal = @PrecioOriginal - @DescuentoUnitario;
 
         SELECT @StockDisponible = ISNULL(SUM(stockQuantity), 0)
         FROM SQM_GENERAL.Tbl_Stocks WITH (UPDLOCK, HOLDLOCK)
@@ -122,12 +142,12 @@ BEGIN
             (
                 @CartId,
                 @ProductoVariableId,
-                @Precio,
+                @PrecioOriginal,
                 @Cantidad,
+                @DescuentoUnitario * @Cantidad,
+                @PrecioOriginal * @Cantidad,
                 0,
-                @Precio * @Cantidad,
-                0,
-                @Precio * @Cantidad,
+                @PrecioFinal * @Cantidad,
                 @MonedaId,
                 @UsuarioId,
                 GETDATE(),
@@ -139,10 +159,11 @@ BEGIN
         ELSE
         BEGIN
             UPDATE SQM_GENERAL.Tbl_CartDetails
-            SET cartDetailPrice = @Precio,
+            SET cartDetailPrice = @PrecioOriginal,
                 cartDetailQuantity = @CantidadActual + @Cantidad,
-                cartDetailSubTotal = @Precio * (@CantidadActual + @Cantidad),
-                cartDetailTotal = @Precio * (@CantidadActual + @Cantidad),
+                cartDetailDiscount = @DescuentoUnitario * (@CantidadActual + @Cantidad),
+                cartDetailSubTotal = @PrecioOriginal * (@CantidadActual + @Cantidad),
+                cartDetailTotal = @PrecioFinal * (@CantidadActual + @Cantidad),
                 cartDetailCurrencyId = @MonedaId,
                 cartDetailModificatorId = @UsuarioId,
                 cartDetailModificationDate = GETDATE()
@@ -188,7 +209,9 @@ BEGIN
         P.productName,
         PV.productVariableValue,
         CD.cartDetailQuantity AS quantity,
-        CD.cartDetailPrice AS unitPrice,
+        CD.cartDetailPrice AS originalUnitPrice,
+        CAST(CD.cartDetailTotal / NULLIF(CD.cartDetailQuantity, 0) AS DECIMAL(18,2)) AS unitPrice,
+        CD.cartDetailDiscount AS discount,
         CD.cartDetailTotal AS total,
         CD.cartDetailCurrencyId AS currencyId
     FROM SQM_GENERAL.Tbl_CartDetails CD
@@ -272,6 +295,7 @@ BEGIN
 
     DECLARE @CartId INT;
     DECLARE @Subtotal DECIMAL(18,2);
+    DECLARE @Descuento DECIMAL(18,2);
     DECLARE @Total DECIMAL(18,2);
     DECLARE @MonedaId INT;
     DECLARE @OrderId INT;
@@ -353,6 +377,7 @@ BEGIN
 
         SELECT
             @Subtotal = SUM(cartDetailSubTotal),
+            @Descuento = SUM(cartDetailDiscount),
             @Total = SUM(cartDetailTotal),
             @MonedaId = MIN(cartDetailCurrencyId)
         FROM SQM_GENERAL.Tbl_CartDetails
@@ -380,7 +405,7 @@ BEGIN
             @DireccionId,
             @MetodoPagoId,
             @Subtotal,
-            0,
+            @Descuento,
             0,
             0,
             @Total,

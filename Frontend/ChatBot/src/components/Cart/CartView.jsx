@@ -1,4 +1,3 @@
-import React from 'react';
 import { useChatStore } from '../../store/useChatStore';
 
 export function CartView() {
@@ -48,7 +47,14 @@ export function CartView() {
                   <td>{item.productName}</td>
                   <td>{item.productVariableValue}</td>
                   <td>{item.quantity}</td>
-                  <td>${item.unitPrice}</td>
+                  <td>
+                    {item.discount > 0 && (
+                      <span style={{ textDecoration: 'line-through', color: '#777', marginRight: '6px' }}>
+                        ${item.originalUnitPrice}
+                      </span>
+                    )}
+                    ${item.unitPrice}
+                  </td>
                   <td>${item.total}</td>
                   <td>
                     <button 

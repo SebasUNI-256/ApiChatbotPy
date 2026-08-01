@@ -30,6 +30,7 @@ MANIFEST
 # ==========================================
 .env
 .venv
+.python_packages/
 env/
 venv/
 ENV/

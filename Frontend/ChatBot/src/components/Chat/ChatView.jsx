@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useChatStore } from '../../store/useChatStore';
 
 export function ChatView() {
+  const suggestions = [
+    { label: 'Ver ofertas', message: 'ver ofertas' },
+    { label: 'Buscar tenis', message: 'quiero tenis' },
+    { label: 'Buscar camisetas', message: 'quiero camiseta' },
+    { label: 'Ver mi carrito', message: 'ver carrito' },
+  ];
   const [inputText, setInputText] = useState('');
   const { 
     messages, 
@@ -13,7 +19,7 @@ export function ChatView() {
 
   useEffect(() => {
     connectWebSocket();
-  }, []);
+  }, [connectWebSocket]);
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -32,9 +38,37 @@ export function ChatView() {
     });
   };
 
+  const handleSuggestion = (message) => {
+    sendMessage(message);
+  };
+
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h2>Chatbot ({isConnected ? '🟢 Conectado' : '🔴 Desconectado'})</h2>
+
+      <div
+        aria-label="Sugerencias para el chat"
+        style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}
+      >
+        {suggestions.map((suggestion) => (
+          <button
+            key={suggestion.message}
+            type="button"
+            disabled={!isConnected}
+            onClick={() => handleSuggestion(suggestion.message)}
+            style={{
+              padding: '7px 12px',
+              border: '1px solid #007bff',
+              borderRadius: '999px',
+              background: '#fff',
+              color: '#007bff',
+              cursor: isConnected ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {suggestion.label}
+          </button>
+        ))}
+      </div>
 
       {/* Historial de Mensajes */}
       <div 
@@ -82,7 +116,24 @@ export function ChatView() {
               >
                 <strong>{prod.ProductName}</strong>
                 <p style={{ margin: '4px 0' }}>{prod.ProductVariableName}</p>
-                <p style={{ margin: '4px 0', fontWeight: 'bold' }}>{prod.CurrencyISO} {prod.ProductVariablePrice}</p>
+                {prod.DiscountPercentage ? (
+                  <div style={{ margin: '4px 0' }}>
+                    {prod.OfferName && (
+                      <div style={{ fontSize: '12px', color: '#555' }}>{prod.OfferName}</div>
+                    )}
+                    <span style={{ color: '#198754', fontWeight: 'bold' }}>
+                      -{prod.DiscountPercentage}%
+                    </span>
+                    <div>
+                      <span style={{ textDecoration: 'line-through', color: '#777', marginRight: '6px' }}>
+                        {prod.CurrencyISO} {prod.OriginalPrice}
+                      </span>
+                      <strong>{prod.CurrencyISO} {prod.ProductVariablePrice}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ margin: '4px 0', fontWeight: 'bold' }}>{prod.CurrencyISO} {prod.ProductVariablePrice}</p>
+                )}
                 <button onClick={() => handleAddToCart(prod.ProductVariableID)}>
                   Agregar al carrito
                 </button>

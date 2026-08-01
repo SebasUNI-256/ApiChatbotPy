@@ -223,6 +223,32 @@ CREATE TABLE [SQM_GENERAL].[Tbl_ProductVariables]
 	productVariableStatusId BIT NOT NULL
 );
 
+CREATE TABLE [SQM_GENERAL].[Tbl_Offers]
+(
+	offerId INT PRIMARY KEY IDENTITY (1,1),
+	offerName VARCHAR(100) NOT NULL,
+	offerDescription VARCHAR(255) NOT NULL,
+	offerDiscountPercentage DECIMAL(5,2) NOT NULL,
+	offerStartDate DATETIME2 NOT NULL,
+	offerEndDate DATETIME2 NULL,
+	offerStatusId BIT NOT NULL,
+	CONSTRAINT UQ_Tbl_Offers_Name UNIQUE (offerName),
+	CONSTRAINT CK_Tbl_Offers_DiscountPercentage
+		CHECK (offerDiscountPercentage > 0 AND offerDiscountPercentage < 100),
+	CONSTRAINT CK_Tbl_Offers_DateRange
+		CHECK (offerEndDate IS NULL OR offerEndDate >= offerStartDate)
+);
+
+CREATE TABLE [SQM_GENERAL].[Tbl_ProductOffers]
+(
+	productOfferId INT PRIMARY KEY IDENTITY (1,1),
+	productOfferOfferId INT REFERENCES [SQM_GENERAL].[Tbl_Offers](offerId) NOT NULL,
+	productOfferProductVariableId INT REFERENCES [SQM_GENERAL].[Tbl_ProductVariables](productVariableId) NOT NULL,
+	productOfferStatusId BIT NOT NULL,
+	CONSTRAINT UQ_Tbl_ProductOffers_OfferProductVariable
+		UNIQUE (productOfferOfferId, productOfferProductVariableId)
+);
+
 CREATE TABLE [SQM_GENERAL].[Tbl_AttributeProductVariables]
 (
 	attributeProductVariableId INT PRIMARY KEY IDENTITY (1,1),

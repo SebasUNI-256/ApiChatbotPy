@@ -16,6 +16,10 @@ class ProductSearchGateway(Protocol):
         conversation_id: int | None,
         page_number: int,
     ) -> tuple[list[dict], int, str, int, int, int, int]: ...
+    def search_offers(
+        self,
+        page_number: int,
+    ) -> tuple[list[dict], int, str, int, int, int]: ...
     def has_products(self, filter_text: str) -> bool: ...
 
 

@@ -123,9 +123,29 @@ class ResolveChatMessageUseCase:
             )
 
         if rule.action_python == "buscar_ofertas_db":
-            reply = self._choose_reply(
-                rule,
-                "Puedo ayudarte a revisar productos disponibles en el catalogo.",
+            try:
+                resolved_input_page = self._parse_positive_int(page_number, "pageNumber")
+            except ValueError as error:
+                return ChatResponse(
+                    result_code=400,
+                    result_message=str(error),
+                    rule=rule.name,
+                    reply=str(error),
+                    conversation_id=conversation_id,
+                )
+
+            (
+                products,
+                result_code,
+                result_message,
+                resolved_page_number,
+                page_size,
+                total_rows,
+            ) = self._search_gateway.search_offers(resolved_input_page)
+            reply = (
+                self._choose_reply(rule, "Estas son las ofertas activas disponibles en este momento.")
+                if result_code == 200
+                else result_message
             )
             resolved_conversation_id = self._history_gateway.log_interaction(
                 user_id=user_id,
@@ -135,11 +155,15 @@ class ResolveChatMessageUseCase:
                 activated_rule_id=rule.rule_id,
             )
             return ChatResponse(
-                result_code=200,
-                result_message="OK",
+                result_code=result_code,
+                result_message=result_message,
                 rule=rule.name,
                 reply=reply,
                 conversation_id=resolved_conversation_id,
+                products=products,
+                page_number=resolved_page_number,
+                page_size=page_size,
+                total_rows=total_rows,
             )
 
         reply = self._choose_reply(

@@ -219,6 +219,17 @@ DECLARE @Plantillas TABLE
     TextoRespuesta NVARCHAR(MAX) NOT NULL
 );
 
+DELETE FROM dbo.PlantillasRespuesta
+WHERE ReglaID = @ReglaOfertasID
+  AND TextoRespuesta IN
+  (
+      N'Puedo ayudarte a revisar productos disponibles. Por ahora las ofertas se consultan sobre el catalogo general.',
+      N'Buscare opciones relacionadas con ofertas o descuentos en el catalogo disponible.',
+      N'Estas son las opciones disponibles que podrian interesarte.',
+      N'Voy a revisar el catalogo para encontrar alternativas convenientes.',
+      N'Si buscas descuentos, dime tambien la categoria o producto que te interesa.'
+  );
+
 INSERT INTO @Plantillas (ReglaID, TextoRespuesta)
 VALUES
 (@ReglaSaludoID, N'Hola, bienvenido a nuestra tienda. En que te puedo ayudar hoy?'),
@@ -236,11 +247,11 @@ VALUES
 (@ReglaNoEntendidoID, N'Disculpa, no comprendi tu mensaje. Puedes escribirlo de otra forma?'),
 (@ReglaNoEntendidoID, N'No estoy seguro de haber entendido. Si buscas un producto, escribe su nombre o pide ver el catalogo.'),
 (@ReglaNoEntendidoID, N'Mi sistema no reconocio esa frase. Intenta usando precio, stock o el nombre del articulo.'),
-(@ReglaOfertasID, N'Puedo ayudarte a revisar productos disponibles. Por ahora las ofertas se consultan sobre el catalogo general.'),
-(@ReglaOfertasID, N'Buscare opciones relacionadas con ofertas o descuentos en el catalogo disponible.'),
-(@ReglaOfertasID, N'Estas son las opciones disponibles que podrian interesarte.'),
-(@ReglaOfertasID, N'Voy a revisar el catalogo para encontrar alternativas convenientes.'),
-(@ReglaOfertasID, N'Si buscas descuentos, dime tambien la categoria o producto que te interesa.');
+(@ReglaOfertasID, N'Estas son las ofertas activas disponibles en este momento.'),
+(@ReglaOfertasID, N'Encontre estos productos con descuento para ti.'),
+(@ReglaOfertasID, N'Estas promociones tienen precio reducido mientras sigan activas.'),
+(@ReglaOfertasID, N'Puedes agregar cualquiera de estas ofertas directamente al carrito.'),
+(@ReglaOfertasID, N'Revisa estas opciones con descuento y disponibilidad actual.');
 
 INSERT INTO dbo.PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
 SELECT t.ReglaID, t.TextoRespuesta, 1
