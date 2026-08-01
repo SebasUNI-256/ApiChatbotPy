@@ -1,15 +1,17 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "./store/useAuthStore.js";
 import { AuthView } from "./components/Auth/AuthView.jsx";
 import { ChatView } from "./components/Chat/ChatView.jsx";
 import { CartView } from "./components/Cart/CartView.jsx";
+import { PaymentMethodsView } from "./components/Payment/PaymentMethodsView.jsx";
 
 export default function App() {
+  const [currentView, setCurrentView] = useState('chat');
   const { user, isAuthenticated, checkSession, isLoading, logout } = useAuthStore();
 
   useEffect(() => {
     checkSession();
-  }, []);
+  }, [checkSession]);
 
   if (isLoading) return <p style={{ textAlign: 'center', marginTop: '50px' }}>Verificando sesión...</p>;
 
@@ -26,10 +28,14 @@ export default function App() {
         </button>
       </header>
       
-      <main>
-        <ChatView />
-        <CartView />
-      </main>
+      {currentView === 'payment' ? (
+        <PaymentMethodsView onBack={() => setCurrentView('chat')} />
+      ) : (
+        <main>
+          <ChatView />
+          <CartView onManagePaymentMethods={() => setCurrentView('payment')} />
+        </main>
+      )}
     </div>
   );
 }

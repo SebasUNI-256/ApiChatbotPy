@@ -23,6 +23,7 @@ from app.infrastructure.sql_auth import (
 )
 from app.infrastructure.sql_chat_history import SqlServerChatHistoryGateway
 from app.infrastructure.sql_cart import SqlServerCartGateway
+from app.infrastructure.sql_checkout import SqlServerCheckoutGateway
 from app.infrastructure.sql_product_search import SqlServerProductSearchGateway
 from app.infrastructure.sql_rule_repository import SqlServerRuleRepository
 from app.presentation.serializers import response_to_dict
@@ -31,6 +32,7 @@ rule_repository = SqlServerRuleRepository()
 rule_cache = InMemoryRuleCache()
 search_gateway = SqlServerProductSearchGateway()
 cart_gateway = SqlServerCartGateway()
+checkout_gateway = SqlServerCheckoutGateway()
 history_gateway = SqlServerChatHistoryGateway()
 auth_gateway = SqlServerAuthGateway()
 chat_use_case = ResolveChatMessageUseCase(
@@ -94,6 +96,53 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     identifier: str = Field(min_length=3, max_length=80)
     password: str = Field(min_length=1, max_length=256)
+
+
+class CheckoutAddressRequest(BaseModel):
+    zip_code: int = Field(alias="zipCode", ge=1000, le=999999999)
+    description: str = Field(min_length=10, max_length=200)
+    is_principal: bool = Field(alias="isPrincipal", default=False)
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str) -> str:
+        normalized = " ".join(value.split())
+        if not any(character.isalpha() for character in normalized):
+            raise ValueError("La direccion debe contener texto descriptivo.")
+        return normalized
+
+
+class CheckoutPaymentMethodRequest(BaseModel):
+    payment_method_type_id: int = Field(alias="paymentMethodTypeId", gt=0)
+    card_number: str = Field(alias="cardNumber", pattern=r"^\d{13,19}$")
+    expiration_date: str = Field(alias="expirationDate", pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
+    cvv: str = Field(pattern=r"^\d{3,4}$")
+    card_holder_name: str = Field(alias="cardHolderName", min_length=3, max_length=100)
+
+    @field_validator("card_holder_name")
+    @classmethod
+    def validate_card_holder_name(cls, value: str) -> str:
+        normalized = " ".join(value.split())
+        allowed_symbols = {" ", "-", "'", "."}
+        if sum(character.isalpha() for character in normalized) < 3:
+            raise ValueError("El titular debe contener al menos tres letras.")
+        if any(
+            not character.isalpha() and character not in allowed_symbols
+            for character in normalized
+        ):
+            raise ValueError("El titular solo puede contener letras, espacios, puntos, guiones y apostrofes.")
+        return normalized
+
+    @field_validator("expiration_date")
+    @classmethod
+    def validate_expiration_date(cls, value: str) -> str:
+        year, month = (int(part) for part in value.split("-"))
+        today = date.today()
+        if (year, month) <= (today.year, today.month):
+            raise ValueError("El vencimiento debe ser como minimo el mes siguiente.")
+        if (year, month) > (today.year + 15, today.month):
+            raise ValueError("El vencimiento no puede superar los proximos 15 anos.")
+        return value
 
 
 @app.exception_handler(RequestValidationError)
@@ -163,6 +212,74 @@ def get_session(request: Request) -> dict[str, Any]:
 def logout(request: Request) -> dict[str, Any]:
     request.session.clear()
     return {"resultCode": 200, "resultMessage": "Sesion cerrada correctamente."}
+
+
+@app.get("/checkout/options")
+def get_checkout_options(request: Request) -> dict[str, Any]:
+    user = require_user(request)
+    try:
+        return checkout_gateway.list_options(int(user["id"]))
+    except pyodbc.Error as error:
+        raise HTTPException(
+            status_code=500,
+            detail="No fue posible consultar los datos de pago.",
+        ) from error
+
+
+@app.post("/checkout/addresses", status_code=201)
+def add_checkout_address(
+    payload: CheckoutAddressRequest,
+    request: Request,
+) -> dict[str, Any]:
+    user = require_user(request)
+    try:
+        address = checkout_gateway.add_address(
+            int(user["id"]),
+            payload.zip_code,
+            payload.description.strip(),
+            payload.is_principal,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except pyodbc.Error as error:
+        raise HTTPException(
+            status_code=500,
+            detail="No fue posible registrar la direccion.",
+        ) from error
+    return {
+        "resultCode": 201,
+        "resultMessage": "Direccion registrada correctamente.",
+        "address": address,
+    }
+
+
+@app.post("/checkout/payment-methods", status_code=201)
+def add_checkout_payment_method(
+    payload: CheckoutPaymentMethodRequest,
+    request: Request,
+) -> dict[str, Any]:
+    user = require_user(request)
+    try:
+        payment_method = checkout_gateway.add_payment_method(
+            int(user["id"]),
+            payload.payment_method_type_id,
+            payload.card_number,
+            payload.expiration_date,
+            payload.cvv,
+            payload.card_holder_name.strip(),
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except pyodbc.Error as error:
+        raise HTTPException(
+            status_code=500,
+            detail="No fue posible registrar el metodo de pago.",
+        ) from error
+    return {
+        "resultCode": 201,
+        "resultMessage": "Metodo de pago registrado correctamente.",
+        "paymentMethod": payment_method,
+    }
 
 
 @app.get("/")

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import api from '../../api/axios';
 import { useAuthStore } from '../../store/useAuthStore';
 export function AuthView() {
   const [isLoginTab, setIsLoginTab] = useState(true);
@@ -45,8 +46,6 @@ export function AuthView() {
     setLoading(true);
 
     try {
-      // Importamos api directamente para registrar
-      const { default: api } = await import('../../api/axios');
       const response = await api.post('/auth/register', {
         ...registerData,
         countryId: Number(registerData.countryId),

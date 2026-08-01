@@ -2,7 +2,7 @@ import os
 
 
 def get_sql_server() -> str:
-    return os.getenv("SQL_SERVER", r"DESKTOP-IRCOFH0\SQLUDEM")
+    return os.getenv("SQL_SERVER", r".\SQLEXPRESS")
 
 
 def get_sql_driver() -> str:
